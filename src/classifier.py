@@ -8,7 +8,7 @@ from constants import INPUT_SIZE, CLASS_INDICES
 class Classifier:
     def __init__(self):
         self.index_to_class = {v: k for k, v in CLASS_INDICES.items()}
-        self.__model = load_model("./model-training/model-train-augment-finetuned.keras")
+        self.__model = load_model("./model-training/new-model.keras")
         # Warmup model
         self.__model.predict(np.zeros((1, INPUT_SIZE[0], INPUT_SIZE[1], 3), dtype=np.float32), verbose=0)
 
