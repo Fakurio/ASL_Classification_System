@@ -23,10 +23,8 @@ async def main():
         current_time = time.time()
         hand_img, border_coords = await asyncio.to_thread(detector.detect_image, frame)
 
-        if border_coords is not None:
-            cv2.rectangle(frame, border_coords[0], border_coords[1], (255, 0, 0), 2)
-
         if hand_img is not None:
+            cv2.rectangle(frame, border_coords[0], border_coords[1], (255, 0, 0), 2)
             predicted_label, confidence = await asyncio.to_thread(classifier.classify_image, hand_img)
             if confidence > CONFIDENCE_THRESHOLD and current_time - last_correct_prediction_time > INTERVAL_THRESHOLD:
                 last_correct_prediction_time = time.time()

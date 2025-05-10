@@ -15,36 +15,38 @@ class Detector:
     def detect_image(self, frame):
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.__hands.process(frame_rgb)
-        if results.multi_hand_landmarks:
-            for hand_landmarks in results.multi_hand_landmarks:
-                curr_landmarks = results.multi_hand_landmarks[0]
-                # Discard blurred frames, eg. transitions between signs
-                movement = self.calc_average_movement(self.__prev_landmarks, curr_landmarks)
-                self.__prev_landmarks = curr_landmarks
-                if movement < MOVEMENT_THRESHOLD:
-                    # Get bounding box from landmarks
-                    h, w, _ = frame.shape
-                    x_coords = [lm.x for lm in hand_landmarks.landmark]
-                    y_coords = [lm.y for lm in hand_landmarks.landmark]
 
-                    # Convert normalized coords into pixel values
-                    xmin = int(min(x_coords) * w) - 50
-                    xmax = int(max(x_coords) * w) + 50
-                    ymin = int(min(y_coords) * h) - 50
-                    ymax = int(max(y_coords) * h) + 50
+        # No hand detected
+        if not results.multi_hand_landmarks:
+            return None, None
 
-                    # Clip to frame bounds
-                    xmin, ymin = max(xmin, 0), max(ymin, 0)
-                    xmax, ymax = min(xmax, w), min(ymax, h)
+        curr_landmarks = results.multi_hand_landmarks[0]
 
-                    # Crop the hand region
-                    hand_img = frame[ymin:ymax, xmin:xmax]
+        # Discard blurred frames, e.g. transitions between signs
+        movement = self.calc_average_movement(self.__prev_landmarks, curr_landmarks)
+        self.__prev_landmarks = curr_landmarks
+        if movement > MOVEMENT_THRESHOLD:
+            return None, None
 
-                    return hand_img, ((xmin, ymin), (xmax, ymax))
+        # Get bounding box from landmarks
+        h, w, _ = frame.shape
+        x_coords = [lm.x for lm in curr_landmarks.landmark]
+        y_coords = [lm.y for lm in curr_landmarks.landmark]
 
-                return None, None
+        # Convert normalized coords into pixel values
+        xmin = int(min(x_coords) * w) - 50
+        xmax = int(max(x_coords) * w) + 50
+        ymin = int(min(y_coords) * h) - 50
+        ymax = int(max(y_coords) * h) + 50
 
-        return None, None
+        # Clip to frame bounds
+        xmin, ymin = max(xmin, 0), max(ymin, 0)
+        xmax, ymax = min(xmax, w), min(ymax, h)
+
+        # Crop the hand region
+        hand_img = frame[ymin:ymax, xmin:xmax]
+
+        return hand_img, ((xmin, ymin), (xmax, ymax))
 
     @staticmethod
     def calc_average_movement(prev_landmarks, curr_landmarks):
