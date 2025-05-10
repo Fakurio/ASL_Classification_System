@@ -1,33 +1,35 @@
 import cv2
-import numpy as np
 import collections
 import asyncio
-from frame_collector import FrameCollector
+import time
 from classifier import Classifier
 from detector import Detector
-from constants import INPUT_SIZE, CONFIDENCE_THRESHOLD
+from constants import CONFIDENCE_THRESHOLD, INTERVAL_THRESHOLD
 
 
 async def main():
     classifier = Classifier()
     detector = Detector()
-    frame_collector = FrameCollector()
     camera = cv2.VideoCapture(0)
     letters_buffer = collections.deque(maxlen=10)
     last_model_output = ""
+    last_correct_prediction_time = time.time()
 
     while True:
         ret, frame = camera.read()
         if not ret:
             break
 
-        hand_img = await asyncio.to_thread(detector.detect_image, frame)
-        mean_frame = frame_collector.collect_and_return(hand_img)
-        if mean_frame is not None:
-            cv2.imshow('Model input', mean_frame)
-            predicted_label, confidence = await asyncio.to_thread(classifier.classify_image, mean_frame)
-            if confidence > CONFIDENCE_THRESHOLD and (
-                    len(letters_buffer) == 0 or letters_buffer[-1] != predicted_label):
+        current_time = time.time()
+        hand_img, border_coords = await asyncio.to_thread(detector.detect_image, frame)
+
+        if border_coords is not None:
+            cv2.rectangle(frame, border_coords[0], border_coords[1], (255, 0, 0), 2)
+
+        if hand_img is not None:
+            predicted_label, confidence = await asyncio.to_thread(classifier.classify_image, hand_img)
+            if confidence > CONFIDENCE_THRESHOLD and current_time - last_correct_prediction_time > INTERVAL_THRESHOLD:
+                last_correct_prediction_time = time.time()
                 letters_buffer.append(predicted_label)
                 model_output = ",".join(letters_buffer)
                 last_model_output = model_output

@@ -26,10 +26,12 @@ class Detector:
                     h, w, _ = frame.shape
                     x_coords = [lm.x for lm in hand_landmarks.landmark]
                     y_coords = [lm.y for lm in hand_landmarks.landmark]
-                    xmin = int(min(x_coords) * w) - 100
-                    xmax = int(max(x_coords) * w) + 100
-                    ymin = int(min(y_coords) * h) - 100
-                    ymax = int(max(y_coords) * h) + 100
+
+                    # Convert normalized coords into pixel values
+                    xmin = int(min(x_coords) * w) - 50
+                    xmax = int(max(x_coords) * w) + 50
+                    ymin = int(min(y_coords) * h) - 50
+                    ymax = int(max(y_coords) * h) + 50
 
                     # Clip to frame bounds
                     xmin, ymin = max(xmin, 0), max(ymin, 0)
@@ -38,11 +40,11 @@ class Detector:
                     # Crop the hand region
                     hand_img = frame[ymin:ymax, xmin:xmax]
 
-                    return hand_img
+                    return hand_img, ((xmin, ymin), (xmax, ymax))
 
-                return None
+                return None, None
 
-        return None
+        return None, None
 
     @staticmethod
     def calc_average_movement(prev_landmarks, curr_landmarks):

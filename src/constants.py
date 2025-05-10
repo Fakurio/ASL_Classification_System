@@ -4,5 +4,5 @@ CLASS_INDICES = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7,
                  'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21, 'W': 22, 'X': 23,
                  'Y': 24, 'Z': 25, 'del': 26, 'nothing': 27, 'space': 28}
 MOVEMENT_THRESHOLD = 0.3
-FRAMES_COUNT = 10  # Number of frames to average
 CONFIDENCE_THRESHOLD = 0.90
+INTERVAL_THRESHOLD = 3  # interval in seconds for adding next high confidence letter to buffer
