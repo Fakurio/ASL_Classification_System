@@ -29,14 +29,21 @@ async def main():
             if confidence > CONFIDENCE_THRESHOLD and current_time - last_correct_prediction_time > INTERVAL_THRESHOLD:
                 last_correct_prediction_time = time.time()
                 letters_buffer.append(predicted_label)
-                model_output = ",".join(letters_buffer)
-                last_model_output = model_output
+                last_model_output = ",".join(letters_buffer)
 
         cv2.putText(frame, last_model_output, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
                     1, (0, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, "Press C to remove last letter", (10, 440), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8, (0, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, "Press Q to quit", (10, 470), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8, (0, 0, 0), 2, cv2.LINE_AA)
         cv2.imshow('Live Camera Feed', frame)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        key = cv2.waitKey(50) & 0xFF
+        if key == ord('c') and len(letters_buffer) > 0:
+            letters_buffer.pop()
+            last_model_output = ",".join(letters_buffer)
+        if key == ord('q'):
             break
 
     camera.release()
